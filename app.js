@@ -2,48 +2,53 @@ const numberInput = document.getElementById("number-input");
 const convertBtn = document.getElementById("convert-btn");
 const result = document.getElementById("result");
 const animationContainer = document.getElementById("animation-container");
-const animationData = [
-    {
-        inputVal: 5,
-        addElDelay: 1000,
-        msg: 'decimalToBinary(5) returns "10" + 1 (5 % 2). Then it pops off the stack.',
-        showMsgDelay: 15000,
-        removeElDelay: 20000,
-    },
-    {
-        inputVal: 2,
-        addElDelay: 1500,
-        msg: 'decimalToBinary(2) returns "1" + 0 (2 % 2) and gives that value to the stack below. Then it pops off the stack.',
-        showMsgDelay: 10000,
-        removeElDelay: 15000,
-    },
-    {
-        inputVal: 1,
-        addElDelay: 2000,
-        msg: "decimalToBinary(1) returns '1' (base case) and gives that value to the stack below. Then it pops off the stack.",
-        showMsgDelay: 5000,
-        removeElDelay: 10000,
-    }
-];
 
 const decimalToBinary = (input) => {
-    if (input === 0 || input === 1) {
-        return String(input);
-    } else {
-        return decimalToBinary(Math.floor(input / 2)) + (input % 2);
-    }
+    if (input === 0 || input === 1) return String(input);
+    return decimalToBinary(Math.floor(input / 2)) + (input % 2);
 };
 
-const showAnimation = () => {
+const createAnimationData = (input) => {
+    let steps = [];
+    let num = input;
+    let delay = 2000;
+
+    while (num > 1) {
+        steps.push({
+            inputVal: num,
+            addElDelay: delay,
+            msg: `decimalToBinary(${num}) returns "${Math.floor(num / 2)}" + ${num % 2}.`,
+            showMsgDelay: delay + 3000,
+            removeElDelay: delay + 6000
+        });
+        num = Math.floor(num / 2);
+        delay += 2000;
+    }
+
+    steps.push({
+        inputVal: num,
+        addElDelay: delay,
+        msg: `decimalToBinary(${num}) returns '1' (base case).`,
+        showMsgDelay: delay + 3000,
+        removeElDelay: delay + 6000
+    });
+
+    return steps.reverse();
+};
+
+const showAnimation = (input) => {
     result.innerText = "Call Stack Animation";
+    animationContainer.innerHTML = "";
+
+    const animationData = createAnimationData(input);
 
     animationData.forEach((obj) => {
         setTimeout(() => {
             animationContainer.innerHTML += `
-        <p id="${obj.inputVal}" class="animation-frame">
-          decimalToBinary(${obj.inputVal})
-        </p>
-      `;
+                <p id="${obj.inputVal}" class="animation-frame">
+                    decimalToBinary(${obj.inputVal})
+                </p>
+            `;
         }, obj.addElDelay);
 
         setTimeout(() => {
@@ -56,24 +61,24 @@ const showAnimation = () => {
     });
 
     setTimeout(() => {
-        result.textContent = decimalToBinary(5);
-    }, 20000);
+        result.textContent = decimalToBinary(input);
+    }, animationData.length * 2000 + 3000);
 };
 
 const checkUserInput = () => {
-    const inputInt = parseInt(numberInput.value);
+    let inputInt = Math.floor(Number(numberInput.value));
 
-    if (!numberInput.value || isNaN(inputInt) || inputInt < 0) {
+    if (isNaN(inputInt) || inputInt < 0) {
         alert("Please provide a decimal number greater than or equal to 0");
         return;
     }
 
-    if (inputInt === 5) {
-        showAnimation();
-        return;
+    if (inputInt > 0) {
+        showAnimation(inputInt);
+    } else {
+        result.textContent = "0";
     }
 
-    result.textContent = decimalToBinary(inputInt);
     numberInput.value = "";
 };
 
